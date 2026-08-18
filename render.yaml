@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: zero-noise-sre
+    env: python
+    buildCommand: pip install -e .
+    startCommand: python cmd/daemon/main.py --port $PORT
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0

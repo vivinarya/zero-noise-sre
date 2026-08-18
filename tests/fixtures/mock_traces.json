@@ -1,0 +1,47 @@
+[
+  {
+    "trace_id": "trc-test-001",
+    "span_id": "span-fe-01",
+    "parent_span_id": null,
+    "service_name": "frontend-gateway",
+    "operation_name": "POST /api/v1/checkout",
+    "start_time_ns": 1723990000000000000,
+    "duration_ms": 1250.0,
+    "status_code": "ERROR",
+    "http_status_code": 500,
+    "attributes": {
+      "http.route": "/api/v1/checkout"
+    }
+  },
+  {
+    "trace_id": "trc-test-001",
+    "span_id": "span-co-02",
+    "parent_span_id": "span-fe-01",
+    "service_name": "checkout-service",
+    "operation_name": "process_order",
+    "start_time_ns": 1723990000010000000,
+    "duration_ms": 1200.0,
+    "status_code": "ERROR",
+    "http_status_code": 500,
+    "attributes": {
+      "order.id": "ord_99882"
+    }
+  },
+  {
+    "trace_id": "trc-test-001",
+    "span_id": "span-pm-03",
+    "parent_span_id": "span-co-02",
+    "service_name": "payment-service",
+    "operation_name": "charge_payment",
+    "start_time_ns": 1723990000020000000,
+    "duration_ms": 1150.0,
+    "status_code": "ERROR",
+    "http_status_code": 500,
+    "error_message": "AttributeError: 'NoneType' object has no attribute 'upper' at app.py:18",
+    "attributes": {
+      "http.target": "/charge",
+      "currency": null,
+      "amount": 100.0
+    }
+  }
+]

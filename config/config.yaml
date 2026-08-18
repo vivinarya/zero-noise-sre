@@ -1,0 +1,39 @@
+# Zero-Noise SRE Core Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  enable_web_ui: true
+
+slo_thresholds:
+  latency_p99_ms: 800.0
+  error_rate_percent: 2.0
+  sliding_window_seconds: 60
+  min_sample_count: 50
+
+llm:
+  # Supported backends: "ollama", "browser_webgpu", "openai_compatible", "mock"
+  backend: "ollama"
+  model: "gemma2:2b"
+  ollama_endpoint: "http://localhost:11434"
+  openai_compatible_endpoint: "http://localhost:8080/v1"
+  temperature: 0.1
+  max_tokens: 1500
+
+observability:
+  prometheus_url: "http://localhost:9090"
+  jaeger_query_url: "http://localhost:16686/api/traces"
+  otlp_receiver_port: 4318
+
+git:
+  default_branch: "main"
+  pr_base_branch: "main"
+  branch_prefix: "sre-fix/"
+  github_token_env: "GITHUB_TOKEN"
+  target_repo_path: "tests/fixtures/sample_service"
+
+sandbox:
+  runtime: "docker"
+  docker_image: "python:3.11-slim"
+  timeout_seconds: 120
+  allow_local_fallback: true

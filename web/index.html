@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero-Noise SRE Core | Autonomous Edge & WebGPU Debugger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <!-- WebLLM for in-browser WebGPU Gemma inference -->
+  <script type="module" src="https://esm.run/@mlc-ai/web-llm"></script>
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="top-nav">
+      <div class="brand">
+        <div class="pulse-ring"></div>
+        <div class="brand-text">
+          <h1>ZERO-NOISE <span>SRE CORE</span></h1>
+          <span class="badge">AUTONOMOUS EDGE / WEBGPU</span>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="model-selector-box">
+          <label for="scenario-select">Incident Scenario:</label>
+          <select id="scenario-select">
+            <option value="razorpay_payment_capture" selected>Razorpay Payment Capture (Null Currency)</option>
+            <option value="razorpay_webhook_hmac">Razorpay Webhook (HMAC Signature Error)</option>
+          </select>
+        </div>
+        <div class="model-selector-box">
+          <label for="engine-select">Reasoning Engine:</label>
+          <select id="engine-select">
+            <option value="browser_webgpu">Browser WebGPU (Gemma 2B In-Window)</option>
+            <option value="ollama" selected>Local Ollama (gemma2:2b / CPU)</option>
+            <option value="mock">Deterministic Mock Engine</option>
+          </select>
+        </div>
+        <button id="btn-trigger-incident" class="btn btn-danger">
+          Simulate Production Incident
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="workspace-grid">
+      <!-- Left Column: Metrics & Topology Visualizer -->
+      <section class="panel panel-left">
+        <div class="panel-header">
+          <h2>Live Telemetry &amp; Topology</h2>
+          <span id="slo-status" class="status-pill green">SLO HEALTHY</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-title">p99 Latency</span>
+            <span id="metric-p99" class="metric-value">42.5 ms</span>
+            <span class="metric-sub">SLO &lt; 800ms</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">Error Rate</span>
+            <span id="metric-error-rate" class="metric-value">0.05 %</span>
+            <span class="metric-sub">SLO &lt; 2.0%</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">Inference Engine</span>
+            <span id="webgpu-status" class="metric-value text-accent">Ready</span>
+            <span class="metric-sub">Device: WebGPU / Local</span>
+          </div>
+        </div>
+
+        <!-- Microservices DAG Visualizer -->
+        <div class="topology-container">
+          <div class="topology-title">Service Dependency Graph (DAG)</div>
+          <div class="dag-canvas" id="dag-canvas">
+            <div class="node" id="node-frontend">frontend-gateway</div>
+            <div class="arrow">↓</div>
+            <div class="node" id="node-checkout">checkout-service</div>
+            <div class="arrow">↓</div>
+            <div class="node" id="node-payment">payment-service</div>
+            <div class="arrow">↓</div>
+            <div class="node" id="node-postgres">payment-db (PostgreSQL)</div>
+          </div>
+        </div>
+
+        <!-- WebGPU In-Browser Engine Progress -->
+        <div id="webgpu-progress-box" class="webgpu-progress hidden">
+          <div class="progress-label">
+            <span>Loading In-Browser Gemma 2B (WebGPU)...</span>
+            <span id="webgpu-percent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="webgpu-bar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center Column: 4-Stage Autonomous Pipeline Execution -->
+      <section class="panel panel-center">
+        <div class="panel-header">
+          <h2>Autonomous Triage Pipeline</h2>
+          <span id="pipeline-stage-pill" class="status-pill gray">IDLE</span>
+        </div>
+
+        <div class="stepper-pipeline">
+          <div class="step-card" id="step-1">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-heading">Stage 1: Symptom &amp; Topology Isolation</div>
+              <div class="step-desc">Traversing OTel trace spans to identify root failing service</div>
+            </div>
+            <div class="step-indicator"></div>
+          </div>
+
+          <div class="step-card" id="step-2">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-heading">Stage 2: Causal Correlation</div>
+              <div class="step-desc">Correlating stack traces with recent git commits &amp; distilling context</div>
+            </div>
+            <div class="step-indicator"></div>
+          </div>
+
+          <div class="step-card" id="step-3">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-heading">Stage 3: Sandboxed Reproduction &amp; Synthesis</div>
+              <div class="step-desc">Synthesizing patch &amp; executing pytest suite inside isolated sandbox</div>
+            </div>
+            <div class="step-indicator"></div>
+          </div>
+
+          <div class="step-card" id="step-4">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-heading">Stage 4: Pull Request &amp; RCA Generation</div>
+              <div class="step-desc">Publishing PR branch and strict Markdown RCA post-mortem</div>
+            </div>
+            <div class="step-indicator"></div>
+          </div>
+        </div>
+
+        <!-- Terminal Execution Logs -->
+        <div class="terminal-container">
+          <div class="terminal-bar">
+            <div class="terminal-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="terminal-title">zero-noise-sre-daemon.log</div>
+          </div>
+          <pre class="terminal-logs" id="terminal-logs">[System Initialized] Listening on OTLP endpoints. SLO healthy.</pre>
+        </div>
+      </section>
+
+      <!-- Right Column: Synthesized Patch & Post-Mortem RCA -->
+      <section class="panel panel-right">
+        <div class="panel-header">
+          <h2>Pull Request &amp; Post-Mortem</h2>
+          <span id="pr-status-pill" class="status-pill gray">NO ACTIVE PR</span>
+        </div>
+
+        <div class="pr-card" id="pr-card">
+          <div class="pr-header">
+            <span class="pr-icon">PR</span>
+            <div class="pr-meta">
+              <div id="pr-title" class="pr-title">Draft PR: Waiting for incident...</div>
+              <div id="pr-branch" class="pr-branch">Branch: -</div>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="tab-rca">RCA Post-Mortem</button>
+            <button class="tab-btn" data-tab="tab-diff">Unified Git Diff</button>
+            <button class="tab-btn" data-tab="tab-test">Reproduction Test</button>
+          </div>
+
+          <div class="tab-content" id="tab-rca">
+            <div id="rca-view" class="markdown-view">
+              <p class="placeholder-text">When an incident triggers, the automated Post-Mortem report will render here.</p>
+            </div>
+          </div>
+
+          <div class="tab-content hidden" id="tab-diff">
+            <pre class="code-view" id="diff-view"># Unified diff will appear here</pre>
+          </div>
+
+          <div class="tab-content hidden" id="tab-test">
+            <pre class="code-view" id="test-view"># Reproduction pytest suite will appear here</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
